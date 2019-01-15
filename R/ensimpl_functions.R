@@ -1,5 +1,5 @@
-#ENSIMPL_API_URL <- 'http://churchill-lab.jax.org/ensimpl/api'
-ENSIMPL_API_URL <- 'http://127.0.0.1:8000/api'
+ENSIMPL_API_URL <- 'http://churchill-lab.jax.org/ensimpl/api'
+#ENSIMPL_API_URL <- 'http://127.0.0.1:8000/api'
 
 
 #' Get the version information from ensimpl.
