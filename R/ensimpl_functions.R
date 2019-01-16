@@ -19,7 +19,9 @@ versions <- function(debug=FALSE) {
 
     httr::reset_config()
 
-    jsonlite::fromJSON(httr::content(r, type = 'text', encoding = 'UTF-8'))
+    temp <- jsonlite::fromJSON(httr::content(r, type = 'text', encoding = 'UTF-8'))
+
+    return(temp$versions)
 }
 
 
@@ -59,7 +61,9 @@ getGene <- function(id, species=NULL, version=NULL,
 
     httr::reset_config()
 
-    jsonlite::fromJSON(httr::content(r, type = 'text', encoding = 'UTF-8'))
+    temp <- jsonlite::fromJSON(httr::content(r, type = 'text', encoding = 'UTF-8'))
+
+    return(temp$gene[[id]])
 }
 
 
@@ -68,16 +72,18 @@ getGene <- function(id, species=NULL, version=NULL,
 #' @param ids A list of Ensembl identifiers.
 #' @param species Either 'Mm' or 'Hs', will default to 'Mm'.
 #' @param version will default to most recent ensimpl version.
-#' @param extended TRUE for extra information.
+#' @param includeAll if TRUE, will give a one to one match
+#' @param extended TRUE for extra information. NOT CURRENTLY USED
 #' @param debug Display some debugging information.
 #' @export
 #' @examples
 #' genes <- batchGenes(c('ENSMUSG00000000001', 'ENSMUSG00000000002'))
-batchGenes <- function(ids, species=NULL, version=NULL,
+batchGenes <- function(ids, species=NULL, version=NULL, includeAll=TRUE,
                        extended=FALSE, debug=FALSE) {
     endpoint <- paste0(ENSIMPL_API_URL, '/genes')
 
     params <- list('ids[]' = ids)
+    numIds <- length(ids)
 
     if (!(is.null(species))) {
         params[['species']] <- species
@@ -99,7 +105,73 @@ batchGenes <- function(ids, species=NULL, version=NULL,
 
     httr::reset_config()
 
-    jsonlite::fromJSON(httr::content(r, type = 'text', encoding = 'UTF-8'))
+    temp <- jsonlite::fromJSON(httr::content(r, type = 'text', encoding = 'UTF-8'), simplifyDataFrame = TRUE)
+    resultsByIDs <- temp$ids
+
+    ret <- data.frame(identifier = rep(NA, numIds),
+                      gene_id = NA,
+                      gene_id_version = NA,
+                      symbol = NA,
+                      name = NA,
+                      chromosome = NA,
+                      start = NA,
+                      end = NA,
+                      strand = NA,
+                      synonyms = NA,
+                      entrez_id = NA,
+                      row.names = ids,
+                      stringsAsFactors = FALSE)
+
+    for (id in ids) {
+        ret[id,]$identifier <- id
+        if (id %in% names(resultsByIDs)) {
+            ret[id,]$gene_id <- resultsByIDs[[id]]$id
+            ret[id,]$gene_id_version <- resultsByIDs[[id]]$ensembl_version
+            ret[id,]$symbol <- resultsByIDs[[id]]$symbol
+            ret[id,]$name <- resultsByIDs[[id]]$name
+            ret[id,]$chromosome <- resultsByIDs[[id]]$chromosome
+            ret[id,]$start <- resultsByIDs[[id]]$start
+            ret[id,]$end <- resultsByIDs[[id]]$end
+            ret[id,]$strand <- resultsByIDs[[id]]$strand
+            ret[id,]$synonyms <- paste(resultsByIDs[[id]]$synonyms, collapse = ':')
+
+            extid_idx = which(resultsByIDs[[id]]$external_ids$db=='EntrezGene')
+            if (length(extid_idx) != 0) {
+                #print(resultsByIDs[[id]]$external_id)
+                #print(resultsByIDs[[id]]$external_ids[which(resultsByIDs[[id]]$external_ids$db=='EntrezGene'),]$db_id)
+                ret[id,]$entrez_id <- paste(resultsByIDs[[id]]$external_ids[extid_idx,]$db_id, collapse = ',')
+            }
+        }
+    }
+
+    if (!includeAll) {
+        ret <- ret[!is.na(ret$gene_id),]
+    }
+
+    return(ret)
+}
+
+#' Get batch gene information from a file.
+#'
+#' @param fileName A file name with ensembl ids
+#' @param species Either 'Mm' or 'Hs', will default to 'Mm'.
+#' @param version will default to most recent ensimpl version.
+#' @param includeAll if TRUE, will give a one to one match
+#' @param extended TRUE for extra information. NOT CURRENTLY USED
+#' @param debug Display some debugging information.
+#' @export
+#' @examples
+#' genes <- batchGenesFile()
+batchGenesFile <- function(fileName, header=FALSE,
+                           species=NULL, version=NULL, includeAll=TRUE,
+                           extended=FALSE, debug=FALSE) {
+    tempIds <- read.csv(fileName, header=header)
+
+    names(tempIds) <- 'V1'
+
+    return (batchGenes(tempIds$V1, species, version, includeAll,
+                       extended, debug))
+
 }
 
 
