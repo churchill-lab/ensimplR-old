@@ -4,8 +4,8 @@
 \alias{batchGenes}
 \title{Get batch gene information.}
 \usage{
-batchGenes(ids, species = NULL, version = NULL, extended = FALSE,
-  debug = FALSE)
+batchGenes(ids, species = NULL, version = NULL, includeAll = TRUE,
+  extended = FALSE, debug = FALSE)
 }
 \arguments{
 \item{ids}{A list of Ensembl identifiers.}
@@ -14,7 +14,9 @@ batchGenes(ids, species = NULL, version = NULL, extended = FALSE,
 
 \item{version}{will default to most recent ensimpl version.}
 
-\item{extended}{TRUE for extra information.}
+\item{includeAll}{if TRUE, will give a one to one match}
+
+\item{extended}{TRUE for extra information. NOT CURRENTLY USED}
 
 \item{debug}{Display some debugging information.}
 }
