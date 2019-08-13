@@ -116,8 +116,8 @@ batchGenes <- function(ids, species=NULL, version=NULL, includeAll=TRUE,
            purrr::map_dfr(~ purrr::map_df(.x, purrr::reduce, stringr::str_c, collapse = ",", sep= "|") ) %>%
            dplyr::rename(gene_id = id,
                          gene_id_version = ensembl_version) %>%
-           mutate(entrez_id = stringr::str_match(external_ids, '^.*EntrezGene\\|([a-zA-Z0-9]*)(,|$)')[,2],
-                  mgi_id = stringr::str_match(external_ids, '^.*MGI\\|(MGI:[a-zA-Z0-9]*)(,|$)')[,2]) %>%
+           dplyr::mutate(entrez_id = stringr::str_match(external_ids, '^.*EntrezGene\\|([a-zA-Z0-9]*)(,|$)')[,2],
+                         mgi_id = stringr::str_match(external_ids, '^.*MGI\\|(MGI:[a-zA-Z0-9]*)(,|$)')[,2]) %>%
            tibble::add_column(identifier = names(temp$ids))
 
     if (includeAll) {
