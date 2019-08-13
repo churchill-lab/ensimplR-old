@@ -1,13 +1,10 @@
 Package: ensimplR
 Title: Get gene annotations.
-Version: 0.0.0.9000
-Date: 2019-01-15
+Version: 0.0.0.9100
+Date: 2019-08-13
 Author: Matt Vincent <matt.vincent@jax.org> 
 Description: Provide annotations for Ensembl identifiers
 License: MIT
 Encoding: UTF-8
 LazyData: true
-Imports:
-    httr,
-    jsonlite
 RoxygenNote: 6.1.1

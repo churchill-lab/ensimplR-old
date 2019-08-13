@@ -1,4 +1,6 @@
-ENSIMPL_API_URL <- 'http://churchill-lab.jax.org/ensimpl/api'
+library(dplyr)
+
+ENSIMPL_API_URL <- 'https://churchilllab.jax.org/ensimpl/api'
 #ENSIMPL_API_URL <- 'http://127.0.0.1:8000/api'
 
 
@@ -21,7 +23,7 @@ versions <- function(debug=FALSE) {
 
     temp <- jsonlite::fromJSON(httr::content(r, type = 'text', encoding = 'UTF-8'))
 
-    return(temp$versions)
+    return(temp$versions %>% as_tibble)
 }
 
 
@@ -82,6 +84,9 @@ batchGenes <- function(ids, species=NULL, version=NULL, includeAll=TRUE,
                        extended=FALSE, debug=FALSE) {
     endpoint <- paste0(ENSIMPL_API_URL, '/genes')
 
+    # Ensure ids are unique
+    ids <- unique(ids)
+
     params <- list('ids[]' = ids)
     numIds <- length(ids)
 
@@ -106,50 +111,25 @@ batchGenes <- function(ids, species=NULL, version=NULL, includeAll=TRUE,
     httr::reset_config()
 
     temp <- jsonlite::fromJSON(httr::content(r, type = 'text', encoding = 'UTF-8'), simplifyDataFrame = TRUE)
-    resultsByIDs <- temp$ids
 
-    ret <- data.frame(identifier = rep(NA, numIds),
-                      gene_id = NA,
-                      gene_id_version = NA,
-                      symbol = NA,
-                      name = NA,
-                      chromosome = NA,
-                      start = NA,
-                      end = NA,
-                      strand = NA,
-                      synonyms = NA,
-                      entrez_id = NA,
-                      row.names = ids,
-                      stringsAsFactors = FALSE)
+    ret <- temp$ids %>%
+           purrr::map_dfr(~ purrr::map_df(.x, purrr::reduce, stringr::str_c, collapse = ",", sep= "|") ) %>%
+           dplyr::rename(gene_id = id,
+                         gene_id_version = ensembl_version) %>%
+           mutate(entrez_id = stringr::str_match(external_ids, '^.*EntrezGene\\|([a-zA-Z0-9]*)(,|$)')[,2],
+                  mgi_id = stringr::str_match(external_ids, '^.*MGI\\|(MGI:[a-zA-Z0-9]*)(,|$)')[,2]) %>%
+           tibble::add_column(identifier = names(temp$ids))
 
-    for (id in ids) {
-        ret[id,]$identifier <- id
-        if (id %in% names(resultsByIDs)) {
-            ret[id,]$gene_id <- resultsByIDs[[id]]$id
-            ret[id,]$gene_id_version <- resultsByIDs[[id]]$ensembl_version
-            ret[id,]$symbol <- resultsByIDs[[id]]$symbol
-            ret[id,]$name <- resultsByIDs[[id]]$name
-            ret[id,]$chromosome <- resultsByIDs[[id]]$chromosome
-            ret[id,]$start <- resultsByIDs[[id]]$start
-            ret[id,]$end <- resultsByIDs[[id]]$end
-            ret[id,]$strand <- resultsByIDs[[id]]$strand
-            ret[id,]$synonyms <- paste(resultsByIDs[[id]]$synonyms, collapse = ':')
-
-            extid_idx = which(resultsByIDs[[id]]$external_ids$db=='EntrezGene')
-            if (length(extid_idx) != 0) {
-                #print(resultsByIDs[[id]]$external_id)
-                #print(resultsByIDs[[id]]$external_ids[which(resultsByIDs[[id]]$external_ids$db=='EntrezGene'),]$db_id)
-                ret[id,]$entrez_id <- paste(resultsByIDs[[id]]$external_ids[extid_idx,]$db_id, collapse = ',')
-            }
-        }
-    }
-
-    if (!includeAll) {
-        ret <- ret[!is.na(ret$gene_id),]
+    if (includeAll) {
+        all <- tibble(identifier = ids)
+        ret <- dplyr::left_join(all, ret, by = c('identifier' = 'identifier'))
     }
 
     return(ret)
 }
+
+
+
 
 #' Get batch gene information from a file.
 #'
@@ -165,15 +145,13 @@ batchGenes <- function(ids, species=NULL, version=NULL, includeAll=TRUE,
 batchGenesFile <- function(fileName, header=FALSE,
                            species=NULL, version=NULL, includeAll=TRUE,
                            extended=FALSE, debug=FALSE) {
-    tempIds <- read.csv(fileName, header=header)
-
+    tempIds <- read.csv(fileName, header=header, stringsAsFactors = FALSE)
     names(tempIds) <- 'V1'
 
     return (batchGenes(tempIds$V1, species, version, includeAll,
                        extended, debug))
 
 }
-
 
 #' Search for gene information.
 #'
