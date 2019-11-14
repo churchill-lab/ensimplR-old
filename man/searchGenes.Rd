@@ -4,17 +4,14 @@
 \alias{searchGenes}
 \title{Search for gene information.}
 \usage{
-searchGenes(term, species = NULL, version = NULL, extended = FALSE,
-  debug = FALSE)
+searchGenes(term, species = NULL, release = NULL, debug = FALSE)
 }
 \arguments{
 \item{term}{The search term.}
 
 \item{species}{Either 'Mm' or 'Hs', will default to 'Mm'.}
 
-\item{version}{will default to most recent ensimpl version.}
-
-\item{extended}{TRUE for extra information.}
+\item{release}{will default to most recent ensimpl release.}
 
 \item{debug}{Display some debugging information.}
 }

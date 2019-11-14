@@ -5,25 +5,26 @@
 \title{Get batch gene information from a file.}
 \usage{
 batchGenesFile(fileName, header = FALSE, species = NULL,
-  version = NULL, includeAll = TRUE, extended = FALSE,
-  debug = FALSE)
+  release = NULL, details = FALSE, debug = FALSE)
 }
 \arguments{
 \item{fileName}{A file name with ensembl ids}
 
+\item{header}{TRUE if the file has a header line.}
+
 \item{species}{Either 'Mm' or 'Hs', will default to 'Mm'.}
 
-\item{version}{will default to most recent ensimpl version.}
+\item{release}{will default to most recent ensimpl release.}
 
-\item{includeAll}{if TRUE, will give a one to one match}
-
-\item{extended}{TRUE for extra information. NOT CURRENTLY USED}
+\item{details}{TRUE for extra information.}
 
 \item{debug}{Display some debugging information.}
 }
+\value{
+By default, with details=FALSE, a tibble will be returned.
+  If details=TRUE, a list will be returned with each element being
+  the matching "id".
+}
 \description{
 Get batch gene information from a file.
-}
-\examples{
-genes <- batchGenesFile()
 }

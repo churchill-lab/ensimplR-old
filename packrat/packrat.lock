@@ -159,6 +159,11 @@ Version: 2.1.3
 Hash: f59680d81ddc45fa3fcb8c07686d1d89
 Requires: cli, crayon, fansi, pillar, pkgconfig, rlang
 
+Package: tictoc
+Source: CRAN
+Version: 1.0
+Hash: 0379257b730eed5b9089765c2921a098
+
 Package: tidyselect
 Source: CRAN
 Version: 0.2.5

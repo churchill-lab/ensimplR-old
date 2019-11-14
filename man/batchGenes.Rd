@@ -4,21 +4,24 @@
 \alias{batchGenes}
 \title{Get batch gene information.}
 \usage{
-batchGenes(ids, species = NULL, version = NULL, includeAll = TRUE,
-  extended = FALSE, debug = FALSE)
+batchGenes(ids = NULL, species = NULL, release = NULL,
+  details = FALSE, debug = FALSE)
 }
 \arguments{
 \item{ids}{A list of Ensembl identifiers.}
 
 \item{species}{Either 'Mm' or 'Hs', will default to 'Mm'.}
 
-\item{version}{will default to most recent ensimpl version.}
+\item{release}{will default to most recent ensimpl release.}
 
-\item{includeAll}{if TRUE, will give a one to one match}
-
-\item{extended}{TRUE for extra information. NOT CURRENTLY USED}
+\item{details}{TRUE for extra information.}
 
 \item{debug}{Display some debugging information.}
+}
+\value{
+By default, with details=FALSE, a tibble will be returned.
+  If details=TRUE, a list will be returned with each element being
+  the matching "id".
 }
 \description{
 Get batch gene information.
