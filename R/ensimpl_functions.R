@@ -9,7 +9,7 @@ library(tibble)
 library(tictoc)
 
 ENSIMPL_API_URL <- 'https://churchilllab.jax.org/ensimpl/api'
-ENSIMPL_API_URL <- 'http://127.0.0.1:5000/api'
+#ENSIMPL_API_URL <- 'http://127.0.0.1:5000/api'
 
 
 #' Get all the releases information from ensimpl.
