@@ -9,7 +9,7 @@ library(tibble)
 library(tictoc)
 
 ENSIMPL_API_URL <- 'https://churchilllab.jax.org/ensimpl/api'
-#ENSIMPL_API_URL <- 'http://127.0.0.1:5000/api'
+ENSIMPL_API_URL <- 'http://127.0.0.1:5000/api'
 
 
 #' Get all the releases information from ensimpl.
@@ -181,6 +181,9 @@ batchGenes <- function(ids=NULL, species=NULL, release=NULL,
     if (!(is.null(ids))) {
         # Ensure ids are unique
         ids <- unique(ids)
+        if (length(ids) == 1) {
+            ids <- list(ids)
+        }
         params[['ids[]']] <- ids
     }
 
@@ -230,6 +233,11 @@ batchGenes <- function(ids=NULL, species=NULL, release=NULL,
     }
 
     tic('Converting')
+
+    # make sure we have some data
+    if (is.null(temp$genes)) {
+        return(NULL)
+    }
 
     if (details) {
         ret <- temp$genes
